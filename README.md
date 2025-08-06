@@ -113,3 +113,16 @@ then i run:
 `helm install metric-app ./metric-app --namespace apps` to install the app in the namespace app
 
 Then my app is running on kubernetes :)
+
+### 6 Setting up Jenkins Pipeline
+Created a Jenkinsfile to run tests and if pass deploy using Helm, and fails if something break
+
+
+### 7 Grafana integration
+I added Prometheus as a data source
+
+
+### 8 Docker
+i created the docker image with the command `docker build -t mateuslopes92/metric-app:latest .`
+then i pushed to the image `docker push mateuslopes92/metric-app:latest`
+and upgraded my nodejs application `helm upgrade metric-app ./metric-app --namespace apps`
