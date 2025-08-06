@@ -1,0 +1,66 @@
+pipeline {
+  agent any
+
+  environment {
+    IMAGE_NAME = "mateuslopes/sample-app"
+    NAMESPACE = "apps"
+    RELEASE_NAME = "metric-app"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install Dependencies') {
+      steps {
+        sh 'npm install'
+      }
+    }
+
+    stage('Run Tests') {
+      steps {
+        sh 'npm test'
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
+      }
+    }
+
+    stage('Push Docker Image') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push $IMAGE_NAME:$BUILD_NUMBER
+          '''
+        }
+      }
+    }
+
+    stage('Deploy with Helm') {
+      steps {
+        sh '''
+          helm upgrade --install $RELEASE_NAME ./helm/metric-app \
+            --namespace $NAMESPACE \
+            --set image.repository=$IMAGE_NAME \
+            --set image.tag=$BUILD_NUMBER
+        '''
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo 'Build or deployment failed!'
+    }
+    success {
+      echo '✅ Successfully deployed!'
+    }
+  }
+}

@@ -8,7 +8,7 @@ Prometheus (Metrics collection system)
 Grafana (Dashboard and alerts -> metrics from prometheus)
 
 The infra will be organized like this:
-
+```
 2 Kubernetes clusters (or 1 cluster with 2 namespaces):
  ├── infra (namespace)
  │   ├── Jenkins
@@ -20,6 +20,7 @@ The infra will be organized like this:
          ├── Helm deployed
          ├── Auto-monitored with Prometheus/Grafana
          └── Tested before deployment
+```
 
 ## Step by Step
 First thing i did was install the required tools with brew:
@@ -99,3 +100,16 @@ accessing grafana:
 `localhost:3000` to access grafana
 
 ### 5 Creating an app + monitoring setup
+I created a k8s nodeJs application to deploy in kubernetes and expose http server
+This application has:
+- NodeJS
+- express
+- prom-client
+- /metrics endpoint with prometheus format
+
+I used helm to create the app
+`helm create metric-app`
+then i run:
+`helm install metric-app ./metric-app --namespace apps` to install the app in the namespace app
+
+Then my app is running on kubernetes :)
